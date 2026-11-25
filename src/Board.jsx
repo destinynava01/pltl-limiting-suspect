@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import HowToPlay from './HowToPlay'
 import { SLIDES as HOW_TO_SLIDES } from './howToSlides'
 import { lsGame, watchGame } from './api'
+import Peek from './Peek'
 import Results from './Results'
 import { ACTS, actOf, clockText, SITE_NAME } from './config'
 import { playClosed, playSolved, playWrong, setSoundOn, soundOn } from './sounds'
@@ -16,6 +17,7 @@ export default function Board({ session, onLobby, onNewGame }) {
   const [busy, setBusy] = useState(false)
   const [sound, setSound] = useState(soundOn)
   const [now, setNow] = useState(() => Date.now())
+  const [peek, setPeek] = useState(null) // the team the leader is peeking at
   const last = useRef(null)
 
   const call = useCallback((payload) => lsGame({ ...payload, game_id: session.gameId, host_token: session.hostToken }), [session])
@@ -82,13 +84,14 @@ export default function Board({ session, onLobby, onNewGame }) {
       {error && <p className="mx-auto mt-3 max-w-7xl rounded-md bg-card px-3 py-2 font-bold text-bad">{error}</p>}
 
       <section className={`mx-auto mt-10 grid max-w-7xl gap-8 ${board.teams.length > 1 ? 'md:grid-cols-2' : ''} ${board.teams.length > 2 ? 'xl:grid-cols-3' : ''}`}>
-        {board.teams.map((t, i) => <CaseFile key={t.index} team={t} tilt={i % 2 ? 'rotate-1' : '-rotate-1'} serverNow={serverNow} />)}
+        {board.teams.map((t, i) => <CaseFile key={t.index} team={t} tilt={i % 2 ? 'rotate-1' : '-rotate-1'} serverNow={serverNow} onPeek={() => setPeek({ index: t.index, name: t.name })} />)}
       </section>
+      {peek && <Peek call={call} team={peek} stamp={board} onClose={() => setPeek(null)} />}
     </main>
   )
 }
 
-function CaseFile({ team, tilt, serverNow }) {
+function CaseFile({ team, tilt, serverNow, onPeek }) {
   const c = team.case
   if (!c) return null
   const f = c.file
@@ -132,7 +135,10 @@ function CaseFile({ team, tilt, serverNow }) {
         {c.finished ? (
           <p className="text-center"><Stamp className="text-2xl">{medal[c.finish_rank - 1] ?? ''} Case closed</Stamp></p>
         ) : (
-          <p className="text-sm">🕵️ Lead detective: <b>{team.lead ?? '…'}</b>{c.misses ? <span className="text-bad"> · {c.misses} wrong tr{c.misses === 1 ? 'y' : 'ies'} on this clue</span> : ''}</p>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-sm">🕵️ Lead detective: <b>{team.lead ?? '…'}</b>{c.misses ? <span className="text-bad"> · {c.misses} wrong tr{c.misses === 1 ? 'y' : 'ies'} on this clue</span> : ''}</p>
+            <button type="button" onClick={onPeek} className="shrink-0 rounded-md border-2 border-line bg-panel px-2 py-1 text-xs font-bold text-accent hover:bg-hover" aria-label={`Peek at ${team.name}'s case`}>👀 Peek</button>
+          </div>
         )}
         {fresh && !c.finished && (
           <p className={`pop mt-2 rounded-md px-3 py-2 text-sm font-semibold ${e.kind === 'wrong' ? 'bg-bad-soft text-bad' : e.kind === 'revealed' ? 'bg-warn-soft text-warn' : 'bg-ok-soft text-ok'}`} key={e.at}>
