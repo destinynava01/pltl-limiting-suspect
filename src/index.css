@@ -1,0 +1,129 @@
+@import "tailwindcss";
+
+/*
+  The look: a detective's corkboard. Cork walls, cream case-file paper pinned up with red pins, typewriter lettering,
+  red "SOLVED" stamps, navy ink for the detective's notes and buttons, and yellow evidence tags. Every color the
+  screens use is one of these tokens.
+*/
+@theme {
+  --color-board: #a8794f;      /* cork */
+  --color-card: #fbf5e6;       /* case-file paper */
+  --color-panel: #f3ead2;      /* inputs, rows on paper */
+  --color-hover: #ece0c0;
+  --color-line: #d6c49c;
+  --color-ink: #2b2118;
+  --color-muted: #6e5d47;
+  --color-accent: #1f3a5f;     /* detective navy: main buttons, titles */
+  --color-accent-soft: #dde6f0;
+  --color-on-accent: #ffffff;
+  --color-info: #1f3a5f;
+  --color-info-soft: #dde6f0;
+  --color-stamp: #c0392b;      /* red stamps, pins and string */
+  --color-ok: #1e8449;
+  --color-ok-soft: #d5f0de;
+  --color-bad: #b03a2e;
+  --color-bad-soft: #f8dcd8;
+  --color-warn: #9a6408;       /* manila evidence tags */
+  --color-warn-soft: #fbeccb;
+  --color-tag: #f4d03f;
+  --font-display: "Special Elite", "Courier New", monospace;
+  --font-body: "Inter", system-ui, sans-serif;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--color-board);
+  color: var(--color-ink);
+}
+
+/* Cork: warm brown with darker and lighter flecks */
+.cork-bg {
+  background-color: var(--color-board);
+  background-image:
+    radial-gradient(circle at 20% 30%, rgb(0 0 0 / 0.12) 0 1.5px, transparent 2px),
+    radial-gradient(circle at 70% 60%, rgb(255 255 255 / 0.10) 0 1.5px, transparent 2px),
+    radial-gradient(circle at 45% 80%, rgb(0 0 0 / 0.10) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 85% 15%, rgb(60 30 10 / 0.18) 0 2px, transparent 2.5px),
+    radial-gradient(ellipse at 50% 0%, rgb(255 230 190 / 0.25), transparent 60%);
+  background-size: 23px 23px, 31px 31px, 17px 17px, 41px 41px, auto;
+  background-attachment: fixed;
+}
+
+.soft-shadow { box-shadow: 0 10px 22px rgb(40 20 5 / 0.35); }
+
+/* A sheet of case-file paper with a red push pin at the top */
+.paper {
+  position: relative;
+  background: var(--color-card);
+  box-shadow: 0 10px 22px rgb(40 20 5 / 0.35), inset 0 0 0 1px rgb(0 0 0 / 0.04);
+}
+.pinned::before {
+  content: "";
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  width: 18px;
+  height: 18px;
+  margin-left: -9px;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 35% 35%, #ff8a7a, var(--color-stamp) 55%, #7d1f15);
+  box-shadow: 0 3px 4px rgb(0 0 0 / 0.4);
+}
+/* Notebook lines, for the typed case text */
+.lined {
+  background-image: repeating-linear-gradient(transparent 0 27px, rgb(31 58 95 / 0.10) 27px 28px);
+}
+
+/* The red rubber stamp: thick border, slight tilt, thumps down */
+.stamp {
+  display: inline-block;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--color-stamp);
+  border: 3px solid var(--color-stamp);
+  border-radius: 6px;
+  padding: 0.1em 0.5em;
+  transform: rotate(-8deg);
+  opacity: 0.88;
+  mix-blend-mode: multiply;
+}
+@keyframes stamp-in {
+  0% { transform: rotate(-8deg) scale(2.2); opacity: 0; }
+  60% { transform: rotate(-8deg) scale(0.92); opacity: 0.95; }
+  100% { transform: rotate(-8deg) scale(1); opacity: 0.88; }
+}
+.stamp-in { animation: stamp-in 0.4s ease-out both; }
+
+/* Yellow evidence tag */
+.tag {
+  display: inline-block;
+  background: var(--color-tag);
+  color: #3b2f05;
+  font-family: var(--font-display);
+  padding: 0.05em 0.5em;
+  box-shadow: 0 2px 0 rgb(0 0 0 / 0.2);
+}
+
+/* A wrong answer: the paper shakes */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-3px); }
+}
+.shake { animation: shake 0.35s ease-in-out; }
+@keyframes pop {
+  0% { transform: scale(0.85); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.pop { animation: pop 0.3s ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .stamp-in, .shake, .pop { animation: none; }
+}
+
+/* Bigger screens (projectors, big monitors): everything a little larger so it reads from the back of the room.
+   Phones and laptops are unchanged. */
+@media (min-width: 1600px) { html { font-size: 106.25%; } }
+@media (min-width: 1900px) { html { font-size: 112.5%; } }
