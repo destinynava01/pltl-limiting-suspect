@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { lsPlay, watchGame } from './api'
 import Calculator from './Calculator'
-import { ACTS, actOf, ATOMIC_MASS, clockText, MOLAR, SITE_NAME, sub } from './config'
+import { ACTS, actOf, ATOMIC_MASS, clockText, equation, MOLAR, SITE_NAME, sub } from './config'
 import { playClosed, playSolved, playWrong } from './sounds'
 import { Button, CenterCard, Label, Paper, Stamp } from './ui'
 
@@ -206,15 +206,16 @@ function Task({ c, lead, busy, canReveal, onAnswer, onReveal }) {
   const isLead = lead?.me
   return (
     <Paper className="lined" key={c.step}>
-      <Label>Act {act.act}: {act.title}{c.step <= 3 ? ` · lab file ${c.step + 1} of 4` : ''}</Label>
+      <Label>Act {act.act}: {act.title}{c.step <= 3 ? ` · lab test ${c.step + 1} of 4` : ''}</Label>
       {c.step === 0 && (
         <p className="mt-2 text-sm">
           Last night someone broke into the pharmacy at <b>{f.hospital}</b>. A patient fell ill after drinking tea that had a strange residue in the cup.
-          Four medicines are on the shelf of suspects. First, balance the crime lab&apos;s combustion equation for each one.
+          Four medicines are on the shelf of suspects: {f.lineup.map((m) => m.name).join(', ')}. First, balance the crime lab&apos;s four test reactions.
+          Each one you balance unlocks a medicine&apos;s file.
         </p>
       )}
       <div className="mt-3">
-        {c.step <= 3 && <BalanceTask med={f.lineup[c.step]} isLead={isLead} busy={busy} onAnswer={onAnswer} />}
+        {c.step <= 3 && <BalanceTask test={f.tests[c.step]} med={f.lineup[c.step]} isLead={isLead} busy={busy} onAnswer={onAnswer} />}
         {c.step === 4 && <ResidueTask f={f} isLead={isLead} busy={busy} onAnswer={onAnswer} />}
         {c.step === 5 && <LogTask f={f} isLead={isLead} busy={busy} onAnswer={onAnswer} />}
         {c.step === 6 && <AccuseTask f={f} isLead={isLead} busy={busy} onAnswer={onAnswer} />}
@@ -235,17 +236,17 @@ function Task({ c, lead, busy, canReveal, onAnswer, onReveal }) {
 }
 
 // Act 1: coefficient boxes in front of each species
-function BalanceTask({ med, isLead, busy, onAnswer }) {
-  const [coefs, setCoefs] = useState(() => med.species.map(() => ''))
+function BalanceTask({ test, med, isLead, busy, onAnswer }) {
+  const [coefs, setCoefs] = useState(() => test.species.map(() => ''))
   const ready = coefs.every((x) => /^\d+$/.test(x) && Number(x) > 0)
   return (
     <div>
-      <p className="font-display text-xl">{med.name} <span className="text-base text-muted">({sub(med.formula)}, used for {med.use})</span></p>
-      <p className="mt-1 text-sm text-muted">Burned in oxygen, it makes CO₂, H₂O{med.species.includes('N2') ? ' and N₂' : ''}. Fill in the smallest whole-number coefficients.</p>
+      <p className="font-display text-xl">{test.type}</p>
+      <p className="mt-1 text-sm text-muted">Fill in the smallest whole-number coefficients. Balancing it unlocks <b>{med.name}</b>&apos;s file.</p>
       <div className="mt-3 flex flex-wrap items-center gap-1.5 text-lg font-bold">
-        {med.species.map((s, i) => (
+        {test.species.map((s, i) => (
           <span key={s} className="flex items-center gap-1">
-            {i > 0 && <span className="px-0.5 text-muted">{i === med.reactants ? '→' : '+'}</span>}
+            {i > 0 && <span className="px-0.5 text-muted">{i === test.reactants ? '→' : '+'}</span>}
             <input aria-label={`Coefficient for ${s}`} className={`${input} w-12`} inputMode="numeric" disabled={!isLead || busy} value={coefs[i]}
               onChange={(e) => setCoefs(coefs.map((x, k) => (k === i ? e.target.value.replace(/\D/g, '').slice(0, 3) : x)))} />
             <span>{sub(s)}</span>
@@ -257,25 +258,25 @@ function BalanceTask({ med, isLead, busy, onAnswer }) {
   )
 }
 
-// Act 2: grams to moles, and which medicine's ratio matches
+// Act 2: grams of AgCl to moles, the residue's molar mass, and which medicine matches
 function ResidueTask({ f, isLead, busy, onAnswer }) {
-  const [co2, setCo2] = useState('')
-  const [h2o, setH2o] = useState('')
+  const [mol, setMol] = useState('')
+  const [mass, setMass] = useState('')
   const [med, setMed] = useState('')
   return (
     <div>
-      <p className="text-sm">The crime lab burned <b>{f.residue.sample_g} g</b> of the residue from the cup. It made:</p>
+      <p className="text-sm">The suspect medicines are hydrochloride salts (·HCl). The crime lab dissolved the residue from the cup and added silver nitrate: the chloride came out as solid <b>AgCl</b>, 1 mol for every mol of medicine.</p>
       <div className="mt-2 grid grid-cols-2 gap-2 text-center">
-        <p className="rounded-md bg-white p-2 shadow"><span className="tag text-xs">EVIDENCE A</span><span className="mt-1 block font-display text-2xl">{f.residue.co2_g} g</span>CO₂</p>
-        <p className="rounded-md bg-white p-2 shadow"><span className="tag text-xs">EVIDENCE B</span><span className="mt-1 block font-display text-2xl">{f.residue.h2o_g} g</span>H₂O</p>
+        <p className="rounded-md bg-white p-2 shadow"><span className="tag text-xs">EVIDENCE A</span><span className="mt-1 block font-display text-2xl">{f.residue.sample_g} g</span>residue</p>
+        <p className="rounded-md bg-white p-2 shadow"><span className="tag text-xs">EVIDENCE B</span><span className="mt-1 block font-display text-2xl">{f.residue.agcl_g} g</span>AgCl</p>
       </div>
-      <p className="mt-2 text-sm text-muted">Turn both into moles. Then compare the CO₂ : H₂O mole ratio with each balanced equation (Case notes, below) to find which medicine it was.</p>
+      <p className="mt-2 text-sm text-muted">Turn the AgCl into moles ({MOLAR.AgCl} g/mol). That&apos;s also the moles of medicine, so its molar mass is grams of residue ÷ moles. Compare with the molar masses in your case notes.</p>
       <div className="mt-3 space-y-2">
-        <label className="flex items-center gap-2 text-sm font-bold">mol CO₂ <input className={`${input} flex-1`} inputMode="decimal" placeholder="moles" disabled={!isLead || busy} value={co2} onChange={(e) => setCo2(e.target.value)} /></label>
-        <label className="flex items-center gap-2 text-sm font-bold">mol H₂O <input className={`${input} flex-1`} inputMode="decimal" placeholder="moles" disabled={!isLead || busy} value={h2o} onChange={(e) => setH2o(e.target.value)} /></label>
+        <label className="flex items-center gap-2 text-sm font-bold">mol AgCl <input className={`${input} flex-1`} inputMode="decimal" placeholder="moles" disabled={!isLead || busy} value={mol} onChange={(e) => setMol(e.target.value)} /></label>
+        <label className="flex items-center gap-2 text-sm font-bold">molar mass <input className={`${input} flex-1`} inputMode="decimal" placeholder="g/mol" disabled={!isLead || busy} value={mass} onChange={(e) => setMass(e.target.value)} /></label>
         <MedicinePicker meds={f.lineup} value={med} onChange={setMed} disabled={!isLead || busy} />
       </div>
-      {isLead && <Button className="mt-4 w-full" disabled={busy || !co2 || !h2o || !med} onClick={() => onAnswer({ co2_mol: co2, h2o_mol: h2o, medicine: med })}>{busy ? 'Checking…' : '🔬 Name the residue'}</Button>}
+      {isLead && <Button className="mt-4 w-full" disabled={busy || !mol || !mass || !med} onClick={() => onAnswer({ agcl_mol: mol, molar_mass: mass, medicine: med })}>{busy ? 'Checking…' : '🔬 Name the residue'}</Button>}
     </div>
   )
 }
@@ -287,6 +288,7 @@ function LogTask({ f, isLead, busy, onAnswer }) {
   return (
     <div>
       <p className="text-sm">The weapon was <b>{f.weapon.name}</b>. Was it stolen? The pharmacy log records doses in <b>mmol</b>; the patients&apos; charts are in <b>mg</b>. Match every patient to their medicine. The log entry nobody matches is the stolen bottle.</p>
+      <p className="mt-2 rounded-md bg-panel px-3 py-2 text-sm"><b>Convert each chart:</b> mg ÷ 1000 = g → g ÷ molar mass = mol → mol × 1000 = <b>mmol</b>. Try each medicine&apos;s molar mass (case notes) until one matches a log entry.</p>
       <div className="mt-3 grid grid-cols-2 gap-2">
         <div className="rounded-md bg-white p-2 text-sm shadow">
           <p className="tag text-xs">PHARMACY LOG</p>
@@ -320,6 +322,7 @@ function AccuseTask({ f, isLead, busy, onAnswer }) {
   return (
     <div>
       <p className="text-sm">The stolen bottle of <b>{f.inventory.medicine}</b> held <b>{f.inventory.start_g} g</b> at the start of the night shift. This morning it holds <b>{f.inventory.end_g} g</b>. Each suspect&apos;s locker has a small vial of it. Work out how many <b>mmol</b> are missing; the thief&apos;s vial holds exactly that much.</p>
+      <p className="mt-2 rounded-md bg-panel px-3 py-2 text-sm">grams missing ÷ molar mass = mol → mol × 1000 = <b>mmol</b></p>
       <ul className="mt-3 grid grid-cols-2 gap-2">
         {f.suspects.map((s) => (
           <li key={s.name}>
@@ -358,29 +361,32 @@ function Reference() {
     <details className="rounded-md bg-card p-3 shadow">
       <summary className="cursor-pointer font-display">📖 Reference card</summary>
       <p className="mt-2 text-sm">Atomic masses: {Object.entries(ATOMIC_MASS).map(([el, m]) => `${el} ${m}`).join(' · ')} g/mol</p>
-      <p className="text-sm">CO₂ = {MOLAR.CO2} g/mol · H₂O = {MOLAR.H2O} g/mol</p>
-      <p className="mt-1 text-xs text-muted">moles = grams ÷ molar mass · mmol = moles × 1000 · mg ÷ (g/mol) = mmol</p>
+      <p className="text-sm">AgCl = {MOLAR.AgCl} g/mol</p>
+      <p className="mt-1 text-sm"><b>mg → mmol:</b> mg ÷ 1000 = g → g ÷ molar mass = mol → mol × 1000 = mmol</p>
+      <p className="text-xs text-muted">Shortcut: the ÷ 1000 and × 1000 cancel, so mg ÷ molar mass gives mmol in one step.</p>
     </details>
   )
 }
 
-// Everything solved so far: the balanced equations (with molar masses), the weapon, the matches
+// Everything solved so far: the balanced lab tests, the medicines' files (molar masses), the weapon, the matches
 function CaseNotes({ c }) {
   const f = c.file
-  const balanced = f.lineup.filter((m) => m.balanced)
-  if (!balanced.length) return null
+  const tests = f.tests.filter((t) => t.balanced)
+  if (!tests.length) return null
   return (
     <Paper pinned={false}>
       <Label>Case notes</Label>
-      <ul className="mt-2 space-y-2 text-sm">
-        {balanced.map((m) => (
+      <p className="mt-2 text-sm font-bold">Medicine files</p>
+      <ul className="mt-1 space-y-1 text-sm">
+        {f.lineup.map((m) => (
           <li key={m.id}>
-            <b>{m.name}</b> <span className="text-muted">({m.molar_mass} g/mol)</span>
-            <span className="block font-display text-base">
-              {m.species.map((s, i) => `${i > 0 ? (i === m.reactants ? ' → ' : ' + ') : ''}${m.balanced[i] === 1 ? '' : m.balanced[i]}${sub(s)}`).join('')}
-            </span>
+            <b>{m.name}</b> <span className="text-muted">({sub(m.formula)})</span>: {m.molar_mass ? <b>{m.molar_mass} g/mol</b> : <span className="text-muted">locked</span>}
           </li>
         ))}
+      </ul>
+      <p className="mt-3 text-sm font-bold">Balanced lab tests</p>
+      <ul className="mt-1 space-y-1 text-sm">
+        {tests.map((t) => <li key={t.id}><span className="text-muted">{t.type}:</span> <span className="font-display text-base">{equation(t, t.balanced)}</span></li>)}
       </ul>
       {f.weapon && <p className="mt-3 text-sm">🔬 The residue: <b>{f.weapon.name}</b></p>}
       {f.stolen && <p className="text-sm">📋 Stolen: <b>{f.stolen.name}</b> ({f.patients.map((p) => `${p.name}: ${p.medicine}`).join(', ')})</p>}

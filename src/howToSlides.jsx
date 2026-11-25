@@ -36,31 +36,31 @@ export const SLIDES = [
     ),
   },
   {
-    title: 'Act 1: balance the lab files',
-    text: 'The crime lab burned each medicine on the suspect shelf. Fill in the smallest whole-number coefficients. A balanced equation unlocks that medicine\'s lab file (and its molar mass).',
+    title: 'Act 1: balance the lab tests',
+    text: 'The crime lab ran four test reactions: a single displacement, a double displacement, a strong acid with a strong base, and one more. Fill in the smallest whole-number coefficients. Each balanced test unlocks one suspect medicine\'s file (its molar mass).',
     art: (
       <Sheet>
-        <p className="font-display text-lg">Aspirin (C₉H₈O₄)</p>
-        <p className="mt-2 flex flex-wrap items-center gap-1 text-base font-bold"><Box>1</Box>C₉H₈O₄ + <Box>9</Box>O₂ → <Box>9</Box>CO₂ + <Box>4</Box>H₂O</p>
+        <p className="font-display text-lg">Single displacement</p>
+        <p className="mt-2 flex flex-wrap items-center gap-1 text-base font-bold"><Box>2</Box>Al + <Box>6</Box>HCl → <Box>2</Box>AlCl₃ + <Box>3</Box>H₂</p>
       </Sheet>
     ),
   },
   {
     title: 'Act 2: the residue',
-    text: 'The residue from the cup burned into some CO₂ and H₂O. Convert both to moles; their ratio matches only one medicine\'s balanced equation. That\'s what was in the tea.',
+    text: 'The medicines are hydrochloride salts. The lab dissolved the residue from the cup and added silver nitrate: its chloride came out as AgCl, 1 mol per mol of medicine. Grams of AgCl → moles → molar mass of the residue. Only one medicine matches.',
     art: (
       <Sheet>
         <div className="grid grid-cols-2 gap-2 text-center">
-          <p className="rounded-md bg-white p-2 shadow"><span className="tag text-xs">EVIDENCE A</span><span className="block font-display text-xl">0.660 g</span>CO₂</p>
-          <p className="rounded-md bg-white p-2 shadow"><span className="tag text-xs">EVIDENCE B</span><span className="block font-display text-xl">0.120 g</span>H₂O</p>
+          <p className="rounded-md bg-white p-2 shadow"><span className="tag text-xs">EVIDENCE A</span><span className="block font-display text-xl">0.350 g</span>residue</p>
+          <p className="rounded-md bg-white p-2 shadow"><span className="tag text-xs">EVIDENCE B</span><span className="block font-display text-xl">0.249 g</span>AgCl</p>
         </div>
-        <p className="mt-2 text-center">0.0150 mol : 0.00666 mol = <b>9 : 4</b> → Aspirin!</p>
+        <p className="mt-2 text-center">0.249 ÷ 143.32 = 0.00174 mol → 0.350 ÷ 0.00174 = <b>201 g/mol</b> → Pseudoephedrine HCl!</p>
       </Sheet>
     ),
   },
   {
     title: 'Acts 3 & 4: follow the moles',
-    text: 'Convert each patient\'s dose (mg) to mmol to match the pharmacy log; the medicine nobody was prescribed was stolen. Then work out how many mmol are missing from its bottle: the thief\'s vial holds exactly that much.',
+    text: 'Convert each patient\'s dose to mmol (mg ÷ 1000 = g, ÷ molar mass = mol, × 1000 = mmol) to match the pharmacy log; the medicine nobody was prescribed was stolen. Then work out how many mmol are missing from its bottle: the thief\'s vial holds exactly that much.',
     art: (
       <Sheet className="-rotate-1">
         <p className="flex justify-between"><span>💉 Nurse Kim</span><b>vial: 6.94 mmol</b></p>

@@ -10,19 +10,24 @@ export const DURATIONS = [null, 20, 30, 45] // minutes (null: no clock)
 
 // The four acts (steps 0-3 are Act 1's four equations)
 export const ACTS = [
-  { act: 1, title: 'The Lab Files', what: 'Balance each medicine\'s combustion equation', emoji: '⚗️' },
-  { act: 2, title: 'The Residue', what: 'Grams of CO₂ and H₂O → moles → which medicine', emoji: '🔬' },
+  { act: 1, title: 'The Lab Tests', what: 'Balance displacement and acid-base reactions', emoji: '⚗️' },
+  { act: 2, title: 'The Residue', what: 'Grams of AgCl → moles → molar mass → which medicine', emoji: '🔬' },
   { act: 3, title: 'The Prescription Log', what: 'mg → mmol: match each patient; the leftover was stolen', emoji: '📋' },
   { act: 4, title: 'The Accusation', what: 'How many mmol are missing? Whose vial matches?', emoji: '🕵️' },
 ]
 export const actOf = (step) => (step <= 3 ? 1 : step - 2)
 
 // Molar masses students use (the same values the server checks with)
-export const ATOMIC_MASS = { C: 12.01, H: 1.008, N: 14.01, O: 16.0 }
-export const MOLAR = { CO2: 44.01, H2O: 18.02 }
+export const ATOMIC_MASS = { C: 12.01, H: 1.008, N: 14.01, O: 16.0, S: 32.07, Cl: 35.45, Ag: 107.87 }
+export const MOLAR = { AgCl: 143.32 }
 
-// "C9H8O4" with subscript digits
+// "Ca3(PO4)2" with subscript digits (a coefficient-free formula, so every digit is a subscript)
 export const sub = (formula) => formula.replace(/\d/g, (d) => '₀₁₂₃₄₅₆₇₈₉'[d])
+
+// "Zn + HCl → ZnCl2 + H2" with the given coefficients (null: blanks), as the case notes show it
+export const equation = (test, coefs) => test.species
+  .map((s, i) => `${i > 0 ? (i === test.reactants ? ' → ' : ' + ') : ''}${coefs ? (coefs[i] === 1 ? '' : coefs[i] ?? '?') : '__'}${sub(s)}`)
+  .join('')
 
 // mm:ss left on the case clock
 export function clockText(ms) {

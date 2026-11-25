@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ACTS, actOf, sub } from './config'
+import { ACTS, actOf, equation, sub } from './config'
 import { Button, Label } from './ui'
 
 // The leader's peek at one team's case: the clue it's on (with the evidence its phones show), the lead detective,
@@ -90,11 +90,11 @@ export default function Peek({ call, team, stamp, onClose }) {
 // The evidence for the clue the team is on (the same facts their phones show)
 function Evidence({ c, f }) {
   if (c.step <= 3) {
-    const m = f.lineup[c.step]
-    return <p className="mt-1">Balance the combustion of <b>{m.name}</b>: <span className="font-display">{m.species.map((s, i) => `${i > 0 ? (i === m.reactants ? ' → ' : ' + ') : ''}__${sub(s)}`).join('')}</span></p>
+    const t = f.tests[c.step]
+    return <p className="mt-1">Balance lab test {c.step + 1} ({t.type.toLowerCase()}): <span className="font-display">{equation(t, null)}</span></p>
   }
   if (c.step === 4) {
-    return <p className="mt-1">Residue sample {f.residue.sample_g} g burned into <b>{f.residue.co2_g} g CO₂</b> and <b>{f.residue.h2o_g} g H₂O</b>. Suspect medicines: {f.lineup.map((m) => `${m.name} (${sub(m.formula)})`).join(', ')}.</p>
+    return <p className="mt-1">Residue sample {f.residue.sample_g} g gave <b>{f.residue.agcl_g} g AgCl</b> with silver nitrate. Suspect medicines: {f.lineup.map((m) => `${m.name} (${sub(m.formula)}${m.molar_mass ? `, ${m.molar_mass} g/mol` : ''})`).join(', ')}.</p>
   }
   if (c.step === 5) {
     return (
@@ -110,12 +110,8 @@ function Evidence({ c, f }) {
 // One answer, written out the way the student entered it
 function describe(step, answer, f) {
   const nameOf = (id) => f.lineup.find((m) => m.id === id)?.name ?? id ?? '?'
-  if (step <= 3) {
-    const m = f.lineup[step]
-    const k = answer.coefficients ?? []
-    return m.species.map((s, i) => `${i > 0 ? (i === m.reactants ? ' → ' : ' + ') : ''}${k[i] ?? '?'}${sub(s)}`).join('')
-  }
-  if (step === 4) return `${answer.co2_mol ?? '?'} mol CO₂, ${answer.h2o_mol ?? '?'} mol H₂O → ${nameOf(answer.medicine)}`
+  if (step <= 3) return equation(f.tests[step], answer.coefficients ?? [])
+  if (step === 4) return `${answer.agcl_mol ?? '?'} mol AgCl, ${answer.molar_mass ?? '?'} g/mol → ${nameOf(answer.medicine)}`
   if (step === 5) return Object.entries(answer.matches ?? {}).map(([p, id]) => `${p}: ${nameOf(id)}`).join('; ')
   return `${answer.missing_mmol ?? '?'} mmol missing → ${answer.suspect ?? '?'}`
 }
