@@ -8,6 +8,7 @@ import { readSession, saveSession } from './session'
 import { isConfigured } from './supabase'
 import { Button, CenterCard } from './ui'
 import ScenarioSubmit, { ScenarioReviewPage } from './Scenarios'
+import { SLIDES as LANDING_SLIDES } from './howToSlides'
 
 // Routes:
 //   /        leader: landing -> lobby -> board (the projector)
@@ -75,6 +76,7 @@ function LeaderApp() {
     return (
       <CenterCard title={SITE_NAME}>
         <p className="mt-2 font-display text-lg text-stamp">{SITE_TAGLINE}</p>
+        <div className="mt-6 flex justify-center text-left [&>*]:max-w-full">{LANDING_SLIDES[0].art}</div>
         <p className="mt-3 text-muted">
           Someone broke into the hospital pharmacy. Each team gets its own case: balance the equations, identify the
           residue, check the prescription log, and name the thief, one stoichiometry problem at a time.
