@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ACTS, actOf, equation, sub } from './config'
 import { Button, Label } from './ui'
+import ReportProblem from './ReportProblem'
 
 // The leader's peek at one team's case: the clue it's on (with the evidence its phones show), the lead detective,
 // every answer tried on this clue, and how the earlier clues went. The answer stays behind a button, since the
@@ -78,6 +79,7 @@ export default function Peek({ call, team, stamp, onClose }) {
                   <span className="text-xs text-muted">(hidden by default in case this is on the projector)</span>
                 </div>
                 {showAnswer && <p className="mt-2 rounded-md bg-ok-soft px-3 py-2 font-mono text-sm text-ok">{data.answer}</p>}
+                <ReportProblem call={call} location={`${team.name} · Act ${act.act}: ${act.title} (clue ${c.step + 1})`} question={''} answer={data.answer ?? ''} className="mt-3 block" />
               </>
             )}
           </>

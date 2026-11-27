@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { lsGame } from './api'
 import { Button, Label, Paper, Stamp } from './ui'
+import ReportProblem from './ReportProblem'
 
 // After the game: teams ranked by points, and each team's whole case with every answer (each team had its own),
 // how many wrong tries each clue took, and the results download.
 export default function Results({ session, onNewGame, onLobby }) {
+  const reportCall = (payload) => lsGame({ ...payload, game_id: session.gameId, host_token: session.hostToken })
   const [report, setReport] = useState(null)
   const [error, setError] = useState('')
   const [open, setOpen] = useState(null)
@@ -56,6 +58,7 @@ export default function Results({ session, onNewGame, onLobby }) {
                       <Label className="mt-1">Answer</Label>
                       <p className="font-display">{s.answer}</p>
                       {s.wrong > 0 && <p className="mt-1 text-bad">{s.wrong} wrong tr{s.wrong === 1 ? 'y' : 'ies'}</p>}
+                      <ReportProblem call={reportCall} location={`${t.name} · Act ${s.act}: ${s.title}`} question={''} answer={s.answer} className="mt-2" />
                     </li>
                   ))}
                 </ol>
