@@ -207,6 +207,7 @@ function Task({ c, lead, busy, canReveal, onAnswer, onReveal }) {
   return (
     <Paper className="lined" key={c.step}>
       <Label>Act {act.act}: {act.title}{c.step <= 3 ? ` · lab test ${c.step + 1} of 4` : ''}</Label>
+      {f.story && <div className="mt-2 rounded-lg border-2 border-dashed border-line px-3 py-2 text-sm">{f.story.title && <p className="font-bold">{f.story.title}</p>}<p>{f.story.text}</p></div>}
       {c.step === 0 && (
         <p className="mt-2 text-sm">
           Last night someone broke into the pharmacy at <b>{f.hospital}</b>. A patient fell ill after drinking tea that had a strange residue in the cup.
